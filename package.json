@@ -1,0 +1,24 @@
+{
+  "name": "thriftplug-stb-inventory",
+  "version": "1.0.0",
+  "description": "Web-based inventory management system for ThriftPlug STB jacket resale business",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server -p 8080",
+    "dev": "live-server --port=8080"
+  },
+  "keywords": ["inventory", "management", "resale", "jackets", "thriftplug"],
+  "author": "Amier Apollis & Ian Jonker",
+  "license": "MIT",
+  "dependencies": {
+    "firebase": "^10.7.1",
+    "chart.js": "^4.4.0",
+    "qrcode": "^1.5.3",
+    "jsqr": "^1.4.0",
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  }
+}

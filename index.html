@@ -1,7 +1,600 @@
-Amier // My name
-Apollis 
-<div>
-    I am a block and you can't block me 
-    </div> <menu></menu>
-    <a href="https://www.google.com">Google</a>
-    <img src= "" alt="I am an image placeholder">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThriftPlug STB - Inventory Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Loading ThriftPlug STB...</p>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1><i class="fas fa-tshirt"></i> ThriftPlug STB</h1>
+                <p>Inventory Management System</p>
+            </div>
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </form>
+            <div id="login-error" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="main-app" class="main-app" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1><i class="fas fa-tshirt"></i> ThriftPlug STB</h1>
+                <span class="user-info">Welcome, <span id="current-user"></span></span>
+            </div>
+            <div class="header-right">
+                <button id="notifications-btn" class="btn btn-icon">
+                    <i class="fas fa-bell"></i>
+                    <span id="notification-count" class="notification-badge">0</span>
+                </button>
+                <button id="logout-btn" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="sidebar">
+            <ul class="nav-menu">
+                <li><a href="#dashboard" class="nav-link active" data-section="dashboard">
+                    <i class="fas fa-chart-dashboard"></i> Dashboard
+                </a></li>
+                <li><a href="#inventory" class="nav-link" data-section="inventory">
+                    <i class="fas fa-boxes"></i> Inventory
+                </a></li>
+                <li><a href="#sales" class="nav-link" data-section="sales">
+                    <i class="fas fa-cash-register"></i> Sales
+                </a></li>
+                <li><a href="#customers" class="nav-link" data-section="customers">
+                    <i class="fas fa-users"></i> Customers
+                </a></li>
+                <li><a href="#events" class="nav-link" data-section="events">
+                    <i class="fas fa-calendar"></i> Events
+                </a></li>
+                <li><a href="#analytics" class="nav-link" data-section="analytics">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </a></li>
+                <li><a href="#qr-scanner" class="nav-link" data-section="qr-scanner">
+                    <i class="fas fa-qrcode"></i> QR Scanner
+                </a></li>
+                <li><a href="#import-export" class="nav-link" data-section="import-export">
+                    <i class="fas fa-file-import"></i> Import/Export
+                </a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="content-section active">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-dashboard"></i> Dashboard</h2>
+                    <div class="header-actions">
+                        <button id="refresh-dashboard" class="btn btn-icon">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Total Inventory</h3>
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                        <div class="card-value" id="total-inventory">0</div>
+                        <div class="card-change positive">+5 this week</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Total Sales</h3>
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="card-value" id="total-sales">R0</div>
+                        <div class="card-change positive">+R250 this week</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Total Profit</h3>
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="card-value" id="total-profit">R0</div>
+                        <div class="card-change positive">+R150 this week</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Low Stock Items</h3>
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="card-value" id="low-stock-count">0</div>
+                        <div class="card-change neutral">View details</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-charts">
+                    <div class="chart-container">
+                        <h3>Sales Trend (Last 30 Days)</h3>
+                        <canvas id="sales-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Seller Performance</h3>
+                        <canvas id="seller-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="recent-activities">
+                    <h3>Recent Activities</h3>
+                    <div id="recent-activities-list" class="activities-list">
+                        <!-- Activities will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Inventory Section -->
+            <section id="inventory-section" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-boxes"></i> Inventory Management</h2>
+                    <div class="header-actions">
+                        <button id="add-jacket-btn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Jacket
+                        </button>
+                        <button id="bulk-import-btn" class="btn btn-secondary">
+                            <i class="fas fa-upload"></i> Bulk Import
+                        </button>
+                    </div>
+                </div>
+
+                <div class="inventory-filters">
+                    <input type="text" id="inventory-search" placeholder="Search jackets..." class="search-input">
+                    <select id="brand-filter" class="filter-select">
+                        <option value="">All Brands</option>
+                    </select>
+                    <select id="size-filter" class="filter-select">
+                        <option value="">All Sizes</option>
+                        <option value="XS">XS</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="XXL">XXL</option>
+                    </select>
+                    <select id="status-filter" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="Available">Available</option>
+                        <option value="Sold">Sold</option>
+                        <option value="Reserved">Reserved</option>
+                    </select>
+                </div>
+
+                <div class="inventory-table-container">
+                    <table id="inventory-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Product ID</th>
+                                <th>Brand</th>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Purchase Price</th>
+                                <th>Selling Price</th>
+                                <th>Date Acquired</th>
+                                <th>Status</th>
+                                <th>QR Code</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-tbody">
+                            <!-- Inventory items will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Sales Section -->
+            <section id="sales-section" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-cash-register"></i> Sales Management</h2>
+                    <div class="header-actions">
+                        <button id="record-sale-btn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Record Sale
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sales-table-container">
+                    <table id="sales-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Sale ID</th>
+                                <th>Product ID</th>
+                                <th>Customer</th>
+                                <th>Seller</th>
+                                <th>Sale Price</th>
+                                <th>Profit</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-tbody">
+                            <!-- Sales records will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Customers Section -->
+            <section id="customers-section" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> Customer Management</h2>
+                    <div class="header-actions">
+                        <button id="add-customer-btn" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Add Customer
+                        </button>
+                    </div>
+                </div>
+
+                <div class="customers-table-container">
+                    <table id="customers-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Customer ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Social Media</th>
+                                <th>Total Purchases</th>
+                                <th>Last Purchase</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customers-tbody">
+                            <!-- Customer records will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Events Section -->
+            <section id="events-section" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-calendar"></i> Events Management</h2>
+                    <div class="header-actions">
+                        <button id="add-event-btn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Event
+                        </button>
+                    </div>
+                </div>
+
+                <div class="events-calendar" id="events-calendar">
+                    <!-- Calendar will be populated here -->
+                </div>
+
+                <div class="events-list">
+                    <h3>Upcoming Events</h3>
+                    <div id="upcoming-events" class="events-container">
+                        <!-- Events will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics-section" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-line"></i> Analytics</h2>
+                    <div class="header-actions">
+                        <select id="analytics-period" class="filter-select">
+                            <option value="7">Last 7 days</option>
+                            <option value="30" selected>Last 30 days</option>
+                            <option value="90">Last 3 months</option>
+                            <option value="365">Last year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Revenue vs Profit</h3>
+                        <canvas id="revenue-profit-chart"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Brand Performance</h3>
+                        <canvas id="brand-performance-chart"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Size Distribution</h3>
+                        <canvas id="size-distribution-chart"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Seller Leaderboard</h3>
+                        <div id="seller-leaderboard" class="leaderboard">
+                            <!-- Leaderboard will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- QR Scanner Section -->
+            <section id="qr-scanner-section" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-qrcode"></i> QR Code Scanner</h2>
+                </div>
+
+                <div class="qr-scanner-container">
+                    <div class="scanner-area">
+                        <video id="qr-video" class="qr-video"></video>
+                        <div class="scanner-overlay">
+                            <div class="scanner-frame"></div>
+                        </div>
+                    </div>
+                    <div class="scanner-controls">
+                        <button id="start-scanner" class="btn btn-primary">
+                            <i class="fas fa-camera"></i> Start Scanner
+                        </button>
+                        <button id="stop-scanner" class="btn btn-secondary">
+                            <i class="fas fa-stop"></i> Stop Scanner
+                        </button>
+                    </div>
+                    <div id="scan-result" class="scan-result">
+                        <!-- Scan results will be displayed here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Import/Export Section -->
+            <section id="import-export-section" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-file-import"></i> Import/Export</h2>
+                </div>
+
+                <div class="import-export-grid">
+                    <div class="import-section">
+                        <h3>Import Data</h3>
+                        <div class="file-upload-area" id="csv-upload-area">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & drop CSV file here or click to browse</p>
+                            <input type="file" id="csv-file-input" accept=".csv" hidden>
+                        </div>
+                        <button id="import-csv-btn" class="btn btn-primary" disabled>
+                            <i class="fas fa-upload"></i> Import CSV
+                        </button>
+                    </div>
+
+                    <div class="export-section">
+                        <h3>Export Data</h3>
+                        <div class="export-options">
+                            <button id="export-inventory-btn" class="btn btn-secondary">
+                                <i class="fas fa-download"></i> Export Inventory
+                            </button>
+                            <button id="export-sales-btn" class="btn btn-secondary">
+                                <i class="fas fa-download"></i> Export Sales
+                            </button>
+                            <button id="export-customers-btn" class="btn btn-secondary">
+                                <i class="fas fa-download"></i> Export Customers
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Jacket Modal -->
+    <div id="add-jacket-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Jacket</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="add-jacket-form" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jacket-brand">Brand *</label>
+                        <input type="text" id="jacket-brand" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jacket-size">Size *</label>
+                        <select id="jacket-size" required>
+                            <option value="">Select Size</option>
+                            <option value="XS">XS</option>
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="XXL">XXL</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jacket-color">Color *</label>
+                        <input type="text" id="jacket-color" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jacket-purchase-price">Purchase Price (R) *</label>
+                        <input type="number" id="jacket-purchase-price" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jacket-selling-price">Selling Price (R) *</label>
+                        <input type="number" id="jacket-selling-price" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jacket-date-acquired">Date Acquired *</label>
+                        <input type="date" id="jacket-date-acquired" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Jacket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Record Sale Modal -->
+    <div id="record-sale-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Record Sale</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="record-sale-form" class="modal-form">
+                <div class="form-group">
+                    <label for="sale-product-id">Product ID *</label>
+                    <input type="text" id="sale-product-id" required>
+                </div>
+                <div class="form-group">
+                    <label for="sale-customer">Customer *</label>
+                    <input type="text" id="sale-customer" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sale-seller">Seller *</label>
+                        <select id="sale-seller" required>
+                            <option value="">Select Seller</option>
+                            <option value="Amier Apollis">Amier Apollis</option>
+                            <option value="Ian Jonker">Ian Jonker</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="sale-price">Sale Price (R) *</label>
+                        <input type="number" id="sale-price" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Record Sale</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="add-customer-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Customer</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="add-customer-form" class="modal-form">
+                <div class="form-group">
+                    <label for="customer-name">Name *</label>
+                    <input type="text" id="customer-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-phone">Phone Number</label>
+                    <input type="tel" id="customer-phone">
+                </div>
+                <div class="form-group">
+                    <label for="customer-social">Social Media Handle</label>
+                    <input type="text" id="customer-social" placeholder="@username">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div id="add-event-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Event</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="add-event-form" class="modal-form">
+                <div class="form-group">
+                    <label for="event-name">Event Name *</label>
+                    <input type="text" id="event-name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="event-date">Date *</label>
+                        <input type="date" id="event-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-time">Time</label>
+                        <input type="time" id="event-time">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="event-location">Location</label>
+                    <input type="text" id="event-location">
+                </div>
+                <div class="form-group">
+                    <label for="event-description">Description</label>
+                    <textarea id="event-description" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Panel -->
+    <div id="notification-panel" class="notification-panel">
+        <div class="notification-header">
+            <h3>Notifications</h3>
+            <button id="close-notifications" class="btn btn-icon">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="notifications-list" class="notifications-list">
+            <!-- Notifications will be populated here -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/inventory.js"></script>
+    <script src="js/sales.js"></script>
+    <script src="js/customers.js"></script>
+    <script src="js/events.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/qr-scanner.js"></script>
+    <script src="js/import-export.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
